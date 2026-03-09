@@ -1,11 +1,15 @@
 /**
- * work_finish — Complete a task (DEV done, QA pass/fail/refine/blocked, architect done/blocked).
+ * work_finish — Complete a task for any MarketClaw role.
  *
  * Delegates side-effects to pipeline service: label transition, state update,
  * issue close/reopen, notifications, and audit logging.
  *
- * All roles (including architect) use the standard pipeline via executeCompletion.
- * Architect workflow: Researching → Done (done, closes issue), Researching → Refining (blocked).
+ * Role workflows:
+ * - Creator done (content PR created) → To Review; blocked → Refining
+ * - Reviewer approve → To Publish; reject → To Improve; blocked → Refining
+ * - Publisher pass → Published; fail → To Improve; blocked → Refining
+ * - Strategist done → Done (closes issue); blocked → Refining
+ * - Analyst done → Done (closes issue); blocked → Refining
  */
 import { jsonResult } from "openclaw/plugin-sdk";
 import { readFile } from "node:fs/promises";
@@ -179,7 +183,7 @@ export function createWorkFinishTool(ctx: PluginContext) {
   return (toolCtx: ToolContext) => ({
     name: "work_finish",
     label: "Work Finish",
-    description: `Complete a task: Developer done (PR created, goes to review) or blocked. Tester pass/fail/refine/blocked. Reviewer approve/reject/blocked. Architect done/blocked. Handles label transition, state update, issue close/reopen, notifications, and audit logging.`,
+    description: `Complete a task: Creator done (content PR created, goes to review) or blocked. Publisher pass/fail/blocked. Reviewer approve/reject/blocked. Strategist done/blocked. Analyst done/blocked. Handles label transition, state update, issue close/reopen, notifications, and audit logging.`,
     parameters: {
       type: "object",
       required: ["channelId", "role", "result"],
@@ -200,7 +204,7 @@ export function createWorkFinishTool(ctx: PluginContext) {
               url: { type: "string", description: "Issue URL" },
             },
           },
-          description: "Tasks created during this work session (architect creates implementation tasks).",
+          description: "Tasks created during this work session (strategist creates content tasks).",
         },
       },
     },

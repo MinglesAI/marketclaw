@@ -33,7 +33,7 @@ export function createChannelLinkTool(_ctx: PluginContext) {
         project: {
           type: "string",
           description:
-            "Project name or slug to link to (e.g. 'devclaw'). Must already be registered via project_register.",
+            "Project name or slug to link to (e.g. 'my-campaign-repo'). Must already be registered via project_register.",
         },
         channel: {
           type: "string",

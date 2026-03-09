@@ -51,14 +51,14 @@ async function resolveProjectFromChannel(
 
 /**
  * Resolve the workspace directory from OpenClaw config.
- * Checks agents.defaults.workspace, then falls back to ~/.openclaw/workspace-devclaw.
+ * Checks agents.defaults.workspace, then falls back to ~/.openclaw/workspace-marketclaw.
  */
 function resolveWorkspaceDir(config: Record<string, unknown>): string | null {
   const agents = config.agents as { defaults?: { workspace?: string }; list?: Array<{ id: string; workspace?: string }> } | undefined;
   if (agents?.defaults?.workspace) return agents.defaults.workspace;
-  const devclaw = agents?.list?.find((a) => a.id === "devclaw");
-  if (devclaw?.workspace) return devclaw.workspace;
-  return path.join(homedir(), ".openclaw", "workspace-devclaw");
+  const marketclaw = agents?.list?.find((a) => a.id === "marketclaw");
+  if (marketclaw?.workspace) return marketclaw.workspace;
+  return path.join(homedir(), ".openclaw", "workspace-marketclaw");
 }
 
 /**

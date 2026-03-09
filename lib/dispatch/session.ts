@@ -88,8 +88,8 @@ export function sendToAgent(
 ): void {
   const rc = opts.runCommand;
   const gatewayParams = JSON.stringify({
-    idempotencyKey: `devclaw-${opts.projectName}-${opts.issueId}-${opts.role}-${opts.level ?? "unknown"}-${opts.slotIndex ?? 0}-${opts.fromLabel ?? "unknown"}-${sessionKey}`,
-    agentId: opts.agentId ?? "devclaw",
+    idempotencyKey: `marketclaw-${opts.projectName}-${opts.issueId}-${opts.role}-${opts.level ?? "unknown"}-${opts.slotIndex ?? 0}-${opts.fromLabel ?? "unknown"}-${sessionKey}`,
+    agentId: opts.agentId ?? "marketclaw",
     sessionKey,
     message: taskMessage,
     deliver: false,

@@ -98,13 +98,14 @@ Config is resolved by merging three layers (later layers override earlier):
 A project config only needs the keys it wants to override. Example project override:
 \`\`\`yaml
 roles:
-  developer:
+  creator:
     models:
       senior: anthropic/claude-opus-4-6
 workflow:
   reviewPolicy: agent
+  publishPolicy: human
 \`\`\`
-This changes only the senior developer model and review policy; everything else inherits.`;
+This changes only the senior creator model and review/publish policies; everything else inherits.`;
 }
 
 function buildStatesSection(): string {
@@ -124,7 +125,7 @@ function buildStatesSection(): string {
 | Field        | Type     | Required | Constrained? | Notes |
 |-------------|----------|----------|--------------|-------|
 | \`type\`      | string   | yes      | FIXED enum: \`queue\`, \`active\`, \`hold\`, \`terminal\` | |
-| \`role\`      | string   | for queue/active | Must match a role key from \`roles:\` section | e.g. \`developer\`, \`reviewer\`, \`tester\` |
+| \`role\`      | string   | for queue/active | Must match a role key from \`roles:\` section | e.g. \`creator\`, \`reviewer\`, \`publisher\`, \`analyst\`, \`strategist\` |
 | \`label\`     | string   | yes      | FREE — any text | Becomes a GitHub/GitLab label. Must be unique across states. |
 | \`color\`     | string   | yes      | FREE — any hex color | Format: \`"#rrggbb"\`. Used for the issue label color. |
 | \`priority\`  | number   | no       | FREE — any positive integer | Lower = higher priority. Only meaningful on \`queue\` states. |
@@ -209,14 +210,15 @@ sync_labels channelId=-100123       # sync one project
 function buildRolesSection(): string {
   return `# Roles Configuration
 
-## Built-in roles (4 defaults — can override or disable)
+## Built-in MarketClaw roles (5 defaults — can override or disable)
 
-| Role       | Default levels          | Default level | Completion results         |
-|-----------|------------------------|---------------|----------------------------|
-| \`developer\`| junior, medior, senior | medior        | done, blocked              |
-| \`tester\`   | junior, medior, senior | medior        | pass, fail, refine, blocked|
-| \`architect\` | junior, senior         | junior        | done, blocked              |
-| \`reviewer\`  | junior, senior         | junior        | approve, reject, blocked   |
+| Role         | Default levels          | Default level | Completion results              |
+|-------------|------------------------|---------------|---------------------------------|
+| \`strategist\` | junior, senior         | junior        | done, blocked                   |
+| \`creator\`    | junior, medior, senior | medior        | done, blocked                   |
+| \`reviewer\`   | junior, senior         | junior        | approve, reject, blocked        |
+| \`publisher\`  | junior, senior         | junior        | pass, fail, blocked             |
+| \`analyst\`    | junior, senior         | junior        | done, blocked                   |
 
 ## Role config fields
 
@@ -237,15 +239,22 @@ function buildRolesSection(): string {
 | medior   | \`anthropic/claude-sonnet-4-5\`   |
 | senior   | \`anthropic/claude-opus-4-6\`     |
 
-Architect junior defaults to \`anthropic/claude-sonnet-4-5\`.
+Strategist junior defaults to \`anthropic/claude-sonnet-4-5\`.
 Reviewer senior defaults to \`anthropic/claude-sonnet-4-5\`.
+
+## MarketClaw-specific config fields
+
+| Field             | Type   | Default | Notes |
+|-------------------|--------|---------|-------|
+| \`publishPolicy\`  | string | \`agent\` | How publisher works: \`agent\` = dispatch publisher, \`skip\` = auto-transition to published, \`human\` = wait for manual trigger |
+| \`analyzeAfterDays\`| number | 7 | Days after publication before analytics is triggered. Set 0 to disable. |
 
 ## Disabling a role
 
 Set the role to \`false\`:
 \`\`\`yaml
 roles:
-  tester: false
+  analyst: false
 \`\`\`
 
 ## Adding a custom role
@@ -283,25 +292,33 @@ Set in \`workflow.reviewPolicy\`:
 |---------|----------|
 | \`human\` | **(default)** All PRs wait for human approval on GitHub/GitLab. The heartbeat polls PR status and auto-merges when approved. |
 | \`agent\` | Every PR is reviewed by an agent (reviewer role) before merge. Agent can approve or reject. |
-| \`auto\`  | Hybrid: junior/medior developers → agent review, senior developers → human review. |
+| \`auto\`  | Hybrid: junior/medior creators → agent review, senior creators → human review. |
 
 ## How review routing works
 
-1. Developer finishes work → issue moves to \`toReview\` state
+1. Creator finishes content → issue moves to \`toReview\` state
 2. Heartbeat checks \`reviewPolicy\` to decide routing:
    - \`human\`: issue stays in \`toReview\`, heartbeat polls PR for approval
-   - \`agent\`: heartbeat dispatches a reviewer worker to check the PR
-   - \`auto\`: checks the developer level that worked on the issue
+   - \`agent\`: heartbeat dispatches a reviewer worker to check the content
+   - \`auto\`: checks the creator level that worked on the issue
 3. The \`toReview\` state should have a \`check: prApproved\` field for human review flow
+
+## How publish routing works
+
+1. Reviewer approves content → issue moves to \`toPublish\` state
+2. Heartbeat checks \`publishPolicy\` to decide routing:
+   - \`agent\` (default): heartbeat dispatches a publisher worker to post the content
+   - \`skip\`: auto-transition through publish queue without dispatching a worker
+   - \`human\`: wait for human to manually trigger publishing
 
 ## Per-issue override labels (FIXED format, applied to individual issues)
 
-| Label           | Effect |
-|----------------|--------|
-| \`review:human\` | Force human review for this issue regardless of policy |
-| \`review:agent\` | Force agent review for this issue |
-| \`review:skip\`  | Skip review entirely — go straight to done/test |
-| \`test:skip\`    | Skip the test phase for this issue (if testing enabled) |
+| Label            | Effect |
+|-----------------|--------|
+| \`review:human\`  | Force human review for this issue regardless of policy |
+| \`review:agent\`  | Force agent review for this issue |
+| \`review:skip\`   | Skip review entirely — go straight to publish queue |
+| \`publish:skip\`  | Skip publish phase — auto-transition to published state |
 
 These labels are applied to the issue on GitHub/GitLab and override the global policy.
 
@@ -316,85 +333,52 @@ The reviewer role must be configured (it is by default) and needs a prompt file 
 }
 
 function buildTestingSection(): string {
-  return `# Test Phase (Optional)
+  return `# Analytics Phase
 
-The test phase is **disabled by default**. When enabled, issues go through automated QA after review, before closing.
+The analytics phase is **enabled by default** with a 7-day delay after publication.
 
-## Default flow (no test phase)
+## Campaign pipeline
 \`\`\`
-Planning → To Do → Doing → To Review → [PR approved] → Done (auto-merge + close)
-\`\`\`
-
-## Flow with test phase enabled
-\`\`\`
-Planning → To Do → Doing → To Review → [PR approved] → To Test → Testing → Done
+Planning → To Research → Researching → [Done: creates content tasks]
+→ To Do → Creating → To Review → To Publish → Publishing → Published
+→ [7 days] → To Analyze → Analyzing → Done
 \`\`\`
 
-## How to enable the test phase
+## Analytics config
 
-Four changes needed:
+Control when analytics is triggered:
 
-### 1. Uncomment the toTest and testing states
-Add these states to your workflow (they're commented out in the default workflow.yaml):
 \`\`\`yaml
-    toTest:
-      type: queue
-      role: tester
-      label: To Test
-      color: "#5bc0de"
-      priority: 2
-      on:
-        PICKUP: testing
-    testing:
-      type: active
-      role: tester
-      label: Testing
-      color: "#9b59b6"
-      on:
-        PASS:
-          target: done
-          actions:
-            - closeIssue
-        FAIL:
-          target: toImprove
-          actions:
-            - reopenIssue
-        REFINE: refining
-        BLOCKED: refining
+workflow:
+  analyzeAfterDays: 7   # default: 7 days after publication
+  publishPolicy: agent  # how publisher is dispatched: agent | skip | human
 \`\`\`
 
-### 2. Change APPROVED targets from "done" to "toTest"
-In the \`toReview\` state:
+## Disabling analytics
+
+Set \`analyzeAfterDays\` to 0:
 \`\`\`yaml
-    toReview:
-      on:
-        APPROVED:
-          target: toTest        # was: done
-          actions:
-            - mergePr
-            - gitPull           # remove closeIssue — tester closes it
+workflow:
+  analyzeAfterDays: 0
 \`\`\`
 
-In the \`reviewing\` state (if using agent review):
-\`\`\`yaml
-    reviewing:
-      on:
-        APPROVE:
-          target: toTest        # was: done
-          actions:
-            - mergePr
-            - gitPull           # remove closeIssue — tester closes it
-\`\`\`
+## Publish policy options
 
-### 3. Remove closeIssue from the APPROVED/APPROVE actions
-The tester now closes the issue on PASS (via the testing state's PASS action).
-
-### 4. Create a tester prompt file
-Create \`<dataDir>/prompts/tester.md\` with instructions for the QA role.
-For project-specific: \`<dataDir>/projects/<name>/prompts/tester.md\`.
+| Value    | Behavior |
+|---------|----------|
+| \`agent\` | (default) Dispatch publisher worker to post content to platforms |
+| \`skip\`  | Auto-transition through publish queue without dispatching publisher |
+| \`human\` | Wait for human to manually trigger publishing |
 
 ## Per-issue skip
-Add the \`test:skip\` label to an issue to skip testing for that specific issue.`;
+Add the \`publish:skip\` label to an issue to skip automated publishing for that specific piece of content.
+
+## Strategist → Content task flow
+
+When a strategist completes research:
+1. Strategist creates individual content tasks in Planning (one per post/email/article)
+2. Operator reviews tasks in Planning and advances them to To Do when ready
+3. Each task flows independently through Creator → Reviewer → Publisher → Analyst`;
 }
 
 function buildTimeoutsSection(): string {
@@ -439,35 +423,35 @@ workflow:
   reviewPolicy: skip
 \`\`\`
 
-### Upgrade models for a critical project
+### Upgrade models for a high-priority campaign
 \`\`\`yaml
 roles:
-  developer:
+  creator:
     models:
       medior: anthropic/claude-opus-4-6
 \`\`\`
 
-### Disable tester for one project
+### Disable analytics for one project
 \`\`\`yaml
 roles:
-  tester: false
+  analyst: false
 \`\`\`
 
 ### Use different model provider
 \`\`\`yaml
 roles:
-  developer:
+  creator:
     models:
       junior: google/gemini-2.0-flash
       medior: google/gemini-2.5-pro
       senior: anthropic/claude-opus-4-6
 \`\`\`
 
-### Allow concurrent developers on a project
+### Allow concurrent creators on a project
 \`\`\`yaml
 roles:
-  developer:
-    maxWorkers: 3  # Allow up to 3 developers working in parallel
+  creator:
+    maxWorkers: 3  # Allow up to 3 creators working in parallel
 \`\`\`
 
 ### Override timeouts for a slow repo

@@ -24,9 +24,9 @@ import { DEFAULT_ROLE_INSTRUCTIONS } from "../setup/templates.js";
  * Session key format (numeric): `agent:{agentId}:subagent:{projectName}-{role}-{level}-{slotIndex}`
  * Session key format (legacy): `agent:{agentId}:subagent:{projectName}-{role}-{level}`
  * Examples:
- *   - `agent:devclaw:subagent:my-project-developer-medior-ada`  → { projectName: "my-project", role: "developer" }
- *   - `agent:devclaw:subagent:my-project-developer-medior-0`    → { projectName: "my-project", role: "developer" }
- *   - `agent:devclaw:subagent:webapp-tester-medior`              → { projectName: "webapp", role: "tester" } (legacy)
+ *   - `agent:marketclaw:subagent:my-project-developer-medior-ada`  → { projectName: "my-project", role: "developer" }
+ *   - `agent:marketclaw:subagent:my-project-developer-medior-0`    → { projectName: "my-project", role: "developer" }
+ *   - `agent:marketclaw:subagent:webapp-tester-medior`              → { projectName: "webapp", role: "tester" } (legacy)
  *
  * Note: projectName may contain hyphens, so we match role from the end.
  */
@@ -62,9 +62,9 @@ export type RoleInstructionsResult = {
  * Returns both the content and the source path for logging/traceability.
  *
  * Resolution order:
- *   1. devclaw/projects/<project>/prompts/<role>.md  (project-specific override)
+ *   1. marketclaw/projects/<project>/prompts/<role>.md  (project-specific override)
  *   2. projects/roles/<project>/<role>.md             (old project-specific)
- *   3. devclaw/prompts/<role>.md                      (workspace default)
+ *   3. marketclaw/prompts/<role>.md                      (workspace default)
  *   4. projects/roles/default/<role>.md               (old default)
  *   5. Package default from templates.ts              (in-memory fallback)
  */
@@ -187,7 +187,7 @@ export function registerBootstrapHook(api: OpenClawPluginApi, ctx: PluginContext
       }
     },
     {
-      name: "devclaw-bootstrap-role-instructions",
+      name: "marketclaw-bootstrap-role-instructions",
       description:
         "Replaces orchestrator AGENTS.md with role-specific instructions for DevClaw workers",
     } as any,

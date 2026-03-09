@@ -1,7 +1,7 @@
 /**
  * llm-model-selector.ts — LLM-powered intelligent model selection.
  *
- * Uses an LLM to understand model capabilities and assign optimal models to DevClaw roles.
+ * Uses an LLM to understand model capabilities and assign optimal models to MarketClaw roles.
  */
 import type { RunCommand } from "../context.js";
 import { ROLE_REGISTRY } from "./index.js";
@@ -66,7 +66,7 @@ function validateAssignment(
 }
 
 /**
- * Use an LLM to intelligently select and assign models to DevClaw roles.
+ * Use an LLM to intelligently select and assign models to MarketClaw roles.
  */
 export async function selectModelsWithLLM(
   availableModels: Array<{ model: string; provider: string }>,
@@ -86,7 +86,7 @@ export async function selectModelsWithLLM(
   const modelList = availableModels.map((m) => m.model).join("\n");
   const jsonExample = buildJsonExample();
 
-  const prompt = `You are an AI model expert. Analyze the following authenticated AI models and assign them to DevClaw development roles based on their capabilities.
+  const prompt = `You are an AI model expert. Analyze the following authenticated AI models and assign them to MarketClaw marketing roles based on their capabilities.
 
 Available models:
 ${modelList}
@@ -108,7 +108,7 @@ Return ONLY a JSON object in this exact format (no markdown, no explanation):
 ${jsonExample}`;
 
   try {
-    const sessionId = "devclaw-model-selection";
+    const sessionId = "marketclaw-model-selection";
 
     if (!execCommand) {
       throw new Error("execCommand is required for LLM model selection");

@@ -1,5 +1,5 @@
 /**
- * setup — Agent-driven DevClaw setup.
+ * setup — Agent-driven MarketClaw setup.
  *
  * Creates agent, configures model levels, writes workspace files.
  * Thin wrapper around lib/setup/.
@@ -16,7 +16,7 @@ export function createSetupTool(ctx: PluginContext) {
   return (toolCtx: ToolContext) => ({
     name: "setup",
     label: "Setup",
-    description: `Execute DevClaw setup. Creates AGENTS.md, HEARTBEAT.md, TOOLS.md, devclaw/projects.json, devclaw/prompts/, and model level config. Optionally creates a new agent with channel binding. Called after onboard collects configuration.`,
+    description: `Execute MarketClaw setup. Creates AGENTS.md, HEARTBEAT.md, TOOLS.md, marketclaw/projects.json, marketclaw/prompts/, and model level config. Optionally creates a new agent with channel binding. Called after onboard collects configuration.`,
     parameters: {
       type: "object",
       properties: {

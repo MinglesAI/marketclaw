@@ -48,7 +48,7 @@ export function registerHeartbeatService(api: OpenClawPluginApi, pluginCtx: Plug
   let intervalId: ReturnType<typeof setInterval> | null = null;
 
   api.registerService({
-    id: "devclaw-heartbeat",
+    id: "marketclaw-heartbeat",
 
     start: async (svcCtx: ServiceContext) => {
       const { intervalSeconds } = HEARTBEAT_DEFAULTS;
