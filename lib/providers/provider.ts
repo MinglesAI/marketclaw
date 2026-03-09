@@ -74,7 +74,7 @@ export interface IssueProvider {
   ensureLabel(name: string, color: string): Promise<void>;
   ensureAllStateLabels(): Promise<void>;
   createIssue(title: string, description: string, label: StateLabel, assignees?: string[]): Promise<Issue>;
-  listIssuesByLabel(label: StateLabel): Promise<Issue[]>;
+  listIssuesByLabel(label: StateLabel, opts?: { state?: "open" | "closed" | "all" }): Promise<Issue[]>;
   /** List issues with optional filters. Provider-agnostic — future Jira/Linear/Trello can map to native queries. */
   listIssues(opts?: { label?: string; state?: "open" | "closed" | "all" }): Promise<Issue[]>;
   getIssue(issueId: number): Promise<Issue>;

@@ -102,8 +102,8 @@ export async function analyticsTriggerPass(opts: {
     // Target must be an analyst queue
     if (targetState.role !== "analyst" || targetState.type !== StateType.QUEUE) continue;
 
-    // Fetch issues in this "published" state
-    const issues = await provider.listIssuesByLabel(state.label);
+    // Fetch issues in this "published" state — closed because publisher closes the issue on completion
+    const issues = await provider.listIssuesByLabel(state.label, { state: "closed" });
     const now = new Date();
     const thresholdMs = analyzeAfterDays * 24 * 60 * 60 * 1000;
 
