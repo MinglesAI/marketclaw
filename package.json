@@ -1,0 +1,63 @@
+{
+  "name": "@minglesai/marketclaw",
+  "version": "0.1.0",
+  "description": "AI marketing team orchestration plugin for OpenClaw — Strategist, Creator, Reviewer, Publisher, Analyst pipeline",
+  "type": "module",
+  "license": "MIT",
+  "author": "Mingles AI <hello@mingles.ai>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/MinglesAI/marketclaw.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MinglesAI/marketclaw/issues"
+  },
+  "homepage": "https://github.com/MinglesAI/marketclaw#readme",
+  "keywords": [
+    "openclaw",
+    "openclaw-plugin",
+    "marketing",
+    "ai-marketing",
+    "content-pipeline",
+    "orchestration",
+    "github"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "openclaw": {
+    "extensions": [
+      "./dist/index.js"
+    ]
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/",
+    "defaults/",
+    "docs/",
+    "openclaw.plugin.json"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "node build.mjs",
+    "check": "tsc --noEmit",
+    "watch": "tsc --noEmit --watch",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "openclaw": "^2026.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^25.2.3",
+    "cockatiel": "^3.2.1",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.9.3",
+    "unique-names-generator": "^4.7.1",
+    "vitest": "^4.0.18",
+    "yaml": "^2.8.2",
+    "zod": "^4.3.6"
+  }
+}

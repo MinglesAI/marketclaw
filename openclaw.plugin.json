@@ -1,0 +1,32 @@
+{
+  "id": "marketclaw",
+  "name": "MarketClaw",
+  "description": "AI marketing team orchestration for OpenClaw. Strategist, Creator, Reviewer, Publisher, Analyst pipeline with content calendar and analytics.",
+  "configSchema": {
+    "type": "object",
+    "properties": {
+      "projectExecution": {
+        "type": "string",
+        "enum": ["parallel", "sequential"],
+        "description": "Project execution mode. Default: parallel."
+      },
+      "notifications": {
+        "type": "object",
+        "description": "Per-event-type notification toggles. All default to true — set to false to suppress.",
+        "properties": {
+          "workerStart": { "type": "boolean" },
+          "workerComplete": { "type": "boolean" }
+        }
+      },
+      "work_heartbeat": {
+        "type": "object",
+        "description": "Token-free interval-based heartbeat service.",
+        "properties": {
+          "enabled": { "type": "boolean" },
+          "intervalSeconds": { "type": "number" },
+          "maxPickupsPerTick": { "type": "number" }
+        }
+      }
+    }
+  }
+}

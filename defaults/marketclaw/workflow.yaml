@@ -1,0 +1,203 @@
+# MarketClaw workflow configuration
+#
+# This file is YOUR configuration — MarketClaw will never overwrite it on restart.
+# Edit freely: roles, models, timeouts, publishPolicy, states, etc.
+# Copy to marketclaw/projects/<project>/workflow.yaml for project-specific overrides.
+#
+# To see what changed in a new version: config({ action: "diff" })
+# To reset to package defaults:         config({ action: "reset", scope: "workflow" })
+
+roles:
+  strategist:
+    models:
+      junior: anthropic/claude-sonnet-4-5
+      senior: anthropic/claude-opus-4-6
+  creator:
+    models:
+      junior: anthropic/claude-haiku-4-5
+      medior: anthropic/claude-sonnet-4-5
+      senior: anthropic/claude-opus-4-6
+  reviewer:
+    models:
+      junior: anthropic/claude-haiku-4-5
+      senior: anthropic/claude-sonnet-4-5
+  publisher:
+    models:
+      junior: anthropic/claude-sonnet-4-5
+      senior: anthropic/claude-opus-4-6
+  analyst:
+    models:
+      junior: anthropic/claude-haiku-4-5
+      senior: anthropic/claude-sonnet-4-5
+
+workflow:
+  initial: planning
+  maxWorkersPerLevel: 2
+  # maxWorkersPerLevel: 2 — each level (junior/medior/senior) gets up to this many parallel slots.
+  reviewPolicy: human # Options: human (default), agent, skip
+  # human — All content PRs need human approval on GitHub. Heartbeat auto-merges when approved.
+  # agent — Agent reviewer checks every content PR before merge.
+  # skip  — Review phase is skipped. Content PRs are auto-merged after creation.
+  publishPolicy: agent # Options: agent (default), skip, human
+  # agent — Dispatch publisher worker automatically when content enters toPublish queue.
+  # skip  — Skip publication (auto-transition toPublish → published). For testing only.
+  # human — Wait for human to manually trigger publishing.
+  analyzeAfterDays: 7
+  # analyzeAfterDays: 7 — Heartbeat cron auto-transitions published → toAnalyze after N days.
+  # Set to 0 to disable automatic analytics triggering.
+  roleExecution: parallel # Options: parallel (default), sequential
+  states:
+    planning:
+      type: hold
+      label: Planning
+      color: "#95a5a6"
+      on:
+        APPROVE: todo
+    refining:
+      type: hold
+      label: Refining
+      color: "#f39c12"
+      on:
+        APPROVE: todo
+    toResearch:
+      type: queue
+      role: strategist
+      label: To Research
+      color: "#0075ca"
+      priority: 1
+      on:
+        PICKUP: researching
+    researching:
+      type: active
+      role: strategist
+      label: Researching
+      color: "#4a90e2"
+      on:
+        COMPLETE:
+          target: done
+          actions:
+            - closeIssue
+        BLOCKED: refining
+    todo:
+      type: queue
+      role: creator
+      label: To Do
+      color: "#428bca"
+      priority: 1
+      on:
+        PICKUP: creating
+    creating:
+      type: active
+      role: creator
+      label: Creating
+      color: "#f0ad4e"
+      on:
+        COMPLETE:
+          target: toReview
+          actions:
+            - detectPr
+        BLOCKED: refining
+    toReview:
+      type: queue
+      role: reviewer
+      label: To Review
+      color: "#7057ff"
+      priority: 2
+      check: prApproved
+      on:
+        PICKUP: reviewing
+        SKIP:
+          target: toPublish
+          actions:
+            - mergePr
+            - gitPull
+        APPROVED:
+          target: toPublish
+          actions:
+            - mergePr
+            - gitPull
+        MERGE_FAILED: toImprove
+        CHANGES_REQUESTED: toImprove
+        MERGE_CONFLICT: toImprove
+        PR_CLOSED:
+          target: rejected
+          actions:
+            - closeIssue
+    reviewing:
+      type: active
+      role: reviewer
+      label: Reviewing
+      color: "#c5def5"
+      on:
+        APPROVE:
+          target: toPublish
+          actions:
+            - mergePr
+            - gitPull
+        REJECT: toImprove
+        BLOCKED: refining
+    toPublish:
+      type: queue
+      role: publisher
+      label: To Publish
+      color: "#e67e22"
+      priority: 2
+      on:
+        PICKUP: publishing
+        SKIP:
+          target: published
+          actions:
+            - closeIssue
+    publishing:
+      type: active
+      role: publisher
+      label: Publishing
+      color: "#d35400"
+      on:
+        PASS:
+          target: published
+          actions:
+            - closeIssue
+        FAIL: toImprove
+        BLOCKED: refining
+    published:
+      type: hold
+      label: Published
+      color: "#27ae60"
+      on:
+        APPROVE: toAnalyze
+    toAnalyze:
+      type: queue
+      role: analyst
+      label: To Analyze
+      color: "#8e44ad"
+      priority: 1
+      on:
+        PICKUP: analyzing
+    analyzing:
+      type: active
+      role: analyst
+      label: Analyzing
+      color: "#9b59b6"
+      on:
+        COMPLETE:
+          target: done
+          actions:
+            - closeIssue
+        BLOCKED: refining
+    done:
+      type: terminal
+      label: Done
+      color: "#5cb85c"
+    rejected:
+      type: terminal
+      label: Rejected
+      color: "#e11d48"
+    toImprove:
+      type: queue
+      role: creator
+      label: To Improve
+      color: "#d9534f"
+      priority: 3
+      on:
+        PICKUP: creating
