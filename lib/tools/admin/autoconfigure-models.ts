@@ -44,7 +44,7 @@ export function createAutoConfigureModelsTool(ctx: PluginContext) {
     name: "autoconfigure_models",
     label: "Auto-Configure Models",
     description:
-      "Automatically discover authenticated models and intelligently assign them to DevClaw roles based on capability tiers",
+      "Automatically discover authenticated models and intelligently assign them to MarketClaw roles based on capability tiers",
     parameters: {
       type: "object",
       properties: {

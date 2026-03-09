@@ -98,13 +98,14 @@ Config is resolved by merging three layers (later layers override earlier):
 A project config only needs the keys it wants to override. Example project override:
 \`\`\`yaml
 roles:
-  developer:
+  creator:
     models:
       senior: anthropic/claude-opus-4-6
 workflow:
   reviewPolicy: agent
+  publishPolicy: human
 \`\`\`
-This changes only the senior developer model and review policy; everything else inherits.`;
+This changes only the senior creator model and review/publish policies; everything else inherits.`;
 }
 
 function buildStatesSection(): string {
@@ -124,7 +125,7 @@ function buildStatesSection(): string {
 | Field        | Type     | Required | Constrained? | Notes |
 |-------------|----------|----------|--------------|-------|
 | \`type\`      | string   | yes      | FIXED enum: \`queue\`, \`active\`, \`hold\`, \`terminal\` | |
-| \`role\`      | string   | for queue/active | Must match a role key from \`roles:\` section | e.g. \`developer\`, \`reviewer\`, \`tester\` |
+| \`role\`      | string   | for queue/active | Must match a role key from \`roles:\` section | e.g. \`creator\`, \`reviewer\`, \`publisher\`, \`analyst\`, \`strategist\` |
 | \`label\`     | string   | yes      | FREE — any text | Becomes a GitHub/GitLab label. Must be unique across states. |
 | \`color\`     | string   | yes      | FREE — any hex color | Format: \`"#rrggbb"\`. Used for the issue label color. |
 | \`priority\`  | number   | no       | FREE — any positive integer | Lower = higher priority. Only meaningful on \`queue\` states. |
@@ -291,7 +292,7 @@ Set in \`workflow.reviewPolicy\`:
 |---------|----------|
 | \`human\` | **(default)** All PRs wait for human approval on GitHub/GitLab. The heartbeat polls PR status and auto-merges when approved. |
 | \`agent\` | Every PR is reviewed by an agent (reviewer role) before merge. Agent can approve or reject. |
-| \`auto\`  | Hybrid: junior/medior developers → agent review, senior developers → human review. |
+| \`auto\`  | Hybrid: junior/medior creators → agent review, senior creators → human review. |
 
 ## How review routing works
 
