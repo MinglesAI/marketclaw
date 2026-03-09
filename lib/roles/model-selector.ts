@@ -27,6 +27,12 @@ const SIMPLE_KEYWORDS = [
   "style",
   "copy",
   "wording",
+  // Marketing-specific simple keywords
+  "quick post",
+  "single tweet",
+  "short email",
+  "repost",
+  "caption",
 ];
 
 // Keywords that indicate complex tasks
@@ -41,6 +47,12 @@ const COMPLEX_KEYWORDS = [
   "performance",
   "infrastructure",
   "multi-service",
+  // Marketing-specific complex keywords
+  "strategy",
+  "campaign",
+  "competitor analysis",
+  "launch",
+  "brand positioning",
 ];
 
 /**

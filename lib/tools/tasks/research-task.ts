@@ -1,15 +1,15 @@
 /**
- * research_task — Start a research ticket in "To Research" state and dispatch the architect.
+ * research_task — Start a research ticket in "To Research" state and dispatch the strategist.
  *
- * The architect picks up the issue, researches, posts findings, and creates
- * implementation tasks via task_create. Then calls work_finish(result="done")
- * which closes the research issue (findings preserved in comments).
+ * The strategist picks up the issue, researches the market/competition/audience,
+ * writes a campaign brief, and creates content tasks via task_create.
+ * Then calls work_finish(result="done") which closes the research issue.
  *
  * Flow:
- *   research_task() → issue created in "To Research" → architect dispatched
- *   → architect researches, posts findings with task_comment
- *   → architect creates implementation tasks with task_create (land in Planning)
- *   → architect calls work_finish(result="done") → "Researching" → "Done" (issue closed)
+ *   research_task() → issue created in "To Research" → strategist dispatched
+ *   → strategist researches, writes brief, posts findings with task_comment
+ *   → strategist creates content tasks with task_create (land in Planning)
+ *   → strategist calls work_finish(result="done") → "Researching" → "Done" (issue closed)
  *   → operator reviews created tasks in Planning, moves to "To Do" when ready
  */
 import { jsonResult } from "openclaw/plugin-sdk";
@@ -32,24 +32,24 @@ export function createResearchTaskTool(ctx: PluginContext) {
   return (toolCtx: ToolContext) => ({
     name: "research_task",
     label: "Research Task",
-    description: `Spawn an architect to research a design/architecture problem. Creates a "To Research" issue and dispatches an architect worker.
+    description: `Spawn a strategist to research a marketing problem and write a campaign brief. Creates a "To Research" issue and dispatches a strategist worker.
 
-IMPORTANT: Provide a detailed description with enough background context for the architect
-to produce actionable, development-ready findings. Include: current state, constraints,
-requirements, relevant code paths, and any prior decisions. The output should be detailed
-enough for a developer to start implementation immediately.
+IMPORTANT: Provide a detailed description with enough background context for the strategist
+to produce actionable, campaign-ready findings. Include: target audience, business goals,
+constraints, competitor context, and any prior decisions. The output should be detailed
+enough for a creator to start writing content immediately.
 
-The architect will:
-1. Research the problem systematically (codebase, docs, web)
-2. Post findings as comments via task_comment
-3. Create implementation tasks via task_create (land in Planning for operator review)
+The strategist will:
+1. Research the market, audience, and competitors systematically
+2. Write a campaign brief with ICP, positioning, channels, KPIs, and content plan
+3. Create content tasks via task_create (land in Planning for operator review)
 4. Call work_finish(result="done", summary="<recommendation + task numbers>") — closes the research issue
 
 Example:
   research_task({
-    title: "Research: Session persistence strategy",
-    description: "Sessions are lost on restart. Current impl uses in-memory Map in session-store.ts. Constraints: must work with SQLite (already a dep), max 50ms latency on read. Prior discussion in #42 ruled out Redis.",
-    focusAreas: ["SQLite vs file-based", "migration path", "cache invalidation"],
+    title: "Research: mingles.ai LinkedIn presence launch",
+    description: "We want to establish a strong LinkedIn presence for mingles.ai. Target: AI-curious founders and product teams at 10-100 person companies. Goal: 500 followers and 3 warm leads in 60 days. No existing content strategy.",
+    focusAreas: ["ICP definition", "content angles", "posting cadence", "competitor analysis"],
     complexity: "complex"
   })`,
     parameters: {
@@ -62,21 +62,21 @@ Example:
         },
         title: {
           type: "string",
-          description: "Research title (e.g., 'Research: Session persistence strategy')",
+          description: "Research title (e.g., 'Research: mingles.ai LinkedIn launch campaign')",
         },
         description: {
           type: "string",
-          description: "Detailed background context: what exists today, why this needs investigation, constraints, relevant code paths, prior decisions. Must be detailed enough for the architect to produce development-ready findings.",
+          description: "Detailed background: target audience, business goals, constraints, competitor context, prior decisions. Must be detailed enough for the strategist to write a complete campaign brief.",
         },
         focusAreas: {
           type: "array",
           items: { type: "string" },
-          description: "Specific areas to investigate (e.g., ['performance', 'scalability', 'simplicity'])",
+          description: "Specific areas to investigate (e.g., ['ICP definition', 'content angles', 'posting cadence'])",
         },
         complexity: {
           type: "string",
           enum: ["simple", "medium", "complex"],
-          description: "Suggests architect level: simple/medium → junior, complex → senior. Defaults to medium.",
+          description: "Suggests strategist level: simple/medium → junior, complex → senior. Defaults to medium.",
         },
         dryRun: {
           type: "boolean",
@@ -95,14 +95,14 @@ Example:
       const workspaceDir = requireWorkspaceDir(toolCtx);
 
       if (!title) throw new Error("title is required");
-      if (!description) throw new Error("description is required — provide detailed background context for the architect");
+      if (!description) throw new Error("description is required — provide detailed background context for the strategist");
 
       const { project } = await resolveProject(workspaceDir, channelId);
       const { provider } = await resolveProvider(project, ctx.runCommand);
       const pluginConfig = ctx.pluginConfig;
-      const role = "architect";
+      const role = "strategist";
 
-      // Build issue body with rich context for the architect to start from
+      // Build issue body with rich context for the strategist to start from
       const bodyParts = ["## Background", "", description];
       if (focusAreas.length > 0) {
         bodyParts.push("", "## Focus Areas", ...focusAreas.map((a) => `- ${a}`));
@@ -131,7 +131,7 @@ Example:
         });
       }
 
-      // Create issue in "To Research" (the architect queue state)
+      // Create issue in "To Research" (the strategist queue state)
       const issue = await provider.createIssue(title, issueBody, TO_RESEARCH_LABEL as StateLabel);
 
       // Mark as system-managed (best-effort).
@@ -146,8 +146,7 @@ Example:
       // Check worker availability across all levels
       const roleWorker = getRoleWorker(project, role);
       if (countActiveSlots(roleWorker) > 0) {
-        // Architect is busy — issue created in queue, heartbeat will pick it up when free
-        // Find any active slot's issueId for the message
+        // Strategist is busy — issue created in queue, heartbeat will pick it up when free
         const activeIssueId = Object.values(roleWorker.levels)
           .flat()
           .find((s) => s.active)?.issueId;
@@ -157,13 +156,13 @@ Example:
           research: {
             level,
             status: "queued",
-            reason: `${role.toUpperCase()} already active on #${activeIssueId}. Research ticket queued — architect will pick it up when current work completes.`,
+            reason: `${role.toUpperCase()} already active on #${activeIssueId}. Research ticket queued — strategist will pick it up when current work completes.`,
           },
-          announcement: `\u{1f4d0} Created research ticket #${issue.iid}: ${title} (architect busy — queued)\n\u{1f517} [Issue #${issue.iid}](${issue.web_url})`,
+          announcement: `\u{1f4d0} Created research ticket #${issue.iid}: ${title} (strategist busy — queued)\n\u{1f517} [Issue #${issue.iid}](${issue.web_url})`,
         });
       }
 
-      // Dispatch architect via standard dispatchTask — same pipeline as every other role.
+      // Dispatch strategist via standard dispatchTask — same pipeline as every other role.
       // fromLabel: "To Research" (queue), toLabel: "Researching" (active)
       const toLabel = getActiveLabel(resolvedConfig.workflow, role);
       const dr = await dispatchTask({

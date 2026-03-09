@@ -83,14 +83,14 @@ async function handleReset(workspacePath: string, scope: string) {
   } else if (scope === "workflow") {
     const workflowPath = path.join(dataDir, "workflow.yaml");
     await backupAndWrite(workflowPath, WORKFLOW_YAML_TEMPLATE);
-    written.push("devclaw/workflow.yaml");
+    written.push("marketclaw/workflow.yaml");
   } else if (scope === "prompts") {
     const promptsDir = path.join(dataDir, "prompts");
     for (const [role, content] of Object.entries(DEFAULT_ROLE_INSTRUCTIONS)) {
       if (!content) continue;
       const rolePath = path.join(promptsDir, `${role}.md`);
       await backupAndWrite(rolePath, content);
-      written.push(`devclaw/prompts/${role}.md`);
+      written.push(`marketclaw/prompts/${role}.md`);
     }
   } else {
     throw new Error(`Unknown scope: ${scope}. Use: prompts, workflow, or all.`);

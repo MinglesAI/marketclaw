@@ -65,15 +65,15 @@ export async function ensureDefaultFiles(workspacePath: string): Promise<void> {
   // Remove BOOTSTRAP.md — one-time onboarding file, not needed after setup
   try { await fs.unlink(path.join(workspacePath, "BOOTSTRAP.md")); } catch { /* already gone */ }
 
-  // devclaw/workflow.yaml — create-only (three-layer merge handles defaults for missing keys)
+  // marketclaw/workflow.yaml — create-only (three-layer merge handles defaults for missing keys)
   const workflowPath = path.join(dataDir, "workflow.yaml");
   await writeIfMissing(workflowPath, WORKFLOW_YAML_TEMPLATE);
 
-  // devclaw/projects.json — create-only
+  // marketclaw/projects.json — create-only
   const projectsJsonPath = path.join(dataDir, "projects.json");
   await writeIfMissing(projectsJsonPath, JSON.stringify({ projects: {} }, null, 2) + "\n");
 
-  // devclaw/prompts/ — create-only per role (user customizations are preserved)
+  // marketclaw/prompts/ — create-only per role (user customizations are preserved)
   for (const role of getAllRoleIds()) {
     const rolePath = path.join(dataDir, "prompts", `${role}.md`);
     const content = DEFAULT_ROLE_INSTRUCTIONS[role];
@@ -150,7 +150,7 @@ export async function writeAllDefaults(workspacePath: string, force = false): Pr
 }
 
 /**
- * Write all workspace files for a DevClaw agent.
+ * Write all workspace files for a MarketClaw agent.
  * Returns the list of files that were written (skips files that already exist).
  *
  * @param defaultWorkspacePath — If provided, USER.md is copied from here (only if not already present).

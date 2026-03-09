@@ -3,8 +3,8 @@
  *
  * Resolution order:
  *   1. Built-in defaults (ROLE_REGISTRY + DEFAULT_WORKFLOW)
- *   2. Workspace: <workspace>/devclaw/workflow.yaml
- *   3. Project:   <workspace>/devclaw/projects/<project>/workflow.yaml
+ *   2. Workspace: <workspace>/marketclaw/workflow.yaml
+ *   3. Project:   <workspace>/marketclaw/projects/<project>/workflow.yaml
  *
  * Also supports legacy config.yaml and workflow.json for backward compat.
  */
@@ -33,7 +33,7 @@ export async function loadConfig(
   // Layer 1: built-in defaults
   const builtIn = buildDefaultConfig();
 
-  // Layer 2: workspace workflow.yaml (in devclaw/ data dir)
+  // Layer 2: workspace workflow.yaml (in marketclaw/ data dir)
   let merged = builtIn;
   const workspaceConfig =
     await readWorkflowFile(dataDir) ??

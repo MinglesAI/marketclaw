@@ -34,7 +34,7 @@ export function createConfigResetTool(_ctx: PluginContext) {
           type: "string",
           enum: ["workflow", "prompts", "all"],
           description:
-            "What to reset. 'workflow' = workflow.yaml, 'prompts' = devclaw/prompts/*.md, 'all' = both. Default: 'all'.",
+            "What to reset. 'workflow' = workflow.yaml, 'prompts' = marketclaw/prompts/*.md, 'all' = both. Default: 'all'.",
         },
       },
       required: ["channelId"],
@@ -48,7 +48,7 @@ export function createConfigResetTool(_ctx: PluginContext) {
       if (target === "workflow" || target === "all") {
         const workflowPath = path.join(dataDir, "workflow.yaml");
         await backupAndWrite(workflowPath, WORKFLOW_YAML_TEMPLATE);
-        resetFiles.push("devclaw/workflow.yaml");
+        resetFiles.push("marketclaw/workflow.yaml");
       }
 
       if (target === "prompts" || target === "all") {
@@ -59,7 +59,7 @@ export function createConfigResetTool(_ctx: PluginContext) {
           if (!content) continue;
           const rolePath = path.join(promptsDir, `${role}.md`);
           await backupAndWrite(rolePath, content);
-          resetFiles.push(`devclaw/prompts/${role}.md`);
+          resetFiles.push(`marketclaw/prompts/${role}.md`);
         }
       }
 

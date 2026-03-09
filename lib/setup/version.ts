@@ -1,7 +1,7 @@
 /**
- * setup/version.ts — Version tracking for DevClaw workspaces.
+ * setup/version.ts — Version tracking for MarketClaw workspaces.
  *
- * Reads/writes `devclaw/.version` to track which version scaffolded the workspace.
+ * Reads/writes `marketclaw/.version` to track which version scaffolded the workspace.
  * Used for upgrade detection and audit logging.
  */
 import fsAsync from "node:fs/promises";
@@ -18,7 +18,7 @@ const VERSION_FILE = ".version";
 const THIS_DIR = path.dirname(fileURLToPath(import.meta.url));
 
 /**
- * Get the current DevClaw version.
+ * Get the current MarketClaw version.
  */
 export function getCurrentVersion(): string {
   if (typeof __PLUGIN_VERSION__ !== "undefined" && __PLUGIN_VERSION__) {
@@ -35,7 +35,7 @@ export function getCurrentVersion(): string {
 }
 
 /**
- * Read the stored version from `devclaw/.version`.
+ * Read the stored version from `marketclaw/.version`.
  * Returns null if the file doesn't exist (pre-versioning workspace).
  */
 export async function readVersionFile(dataDir: string): Promise<string | null> {
@@ -48,7 +48,7 @@ export async function readVersionFile(dataDir: string): Promise<string | null> {
 }
 
 /**
- * Write the current version to `devclaw/.version`.
+ * Write the current version to `marketclaw/.version`.
  */
 export async function writeVersionFile(dataDir: string): Promise<void> {
   await fsAsync.writeFile(

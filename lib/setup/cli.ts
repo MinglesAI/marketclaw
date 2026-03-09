@@ -24,16 +24,16 @@ function getDefaultWorkspaceDir(runtime: PluginRuntime): string | undefined {
 }
 
 /**
- * Register the `devclaw` CLI command group on a Commander program.
+ * Register the `marketclaw` CLI command group on a Commander program.
  */
 export function registerCli(program: Command, ctx: PluginContext): void {
-  const devclaw = program
+  const marketclaw = program
     .command("marketclaw")
-    .description("DevClaw development pipeline tools");
+    .description("MarketClaw AI marketing pipeline tools");
 
-  const setupCmd = devclaw
+  const setupCmd = marketclaw
     .command("setup")
-    .description("Set up DevClaw: create agent, configure models, write workspace files")
+    .description("Set up MarketClaw: create agent, configure models, write workspace files")
     .option("--new-agent <name>", "Create a new agent with this name")
     .option("--agent <id>", "Use an existing agent by ID")
     .option("--workspace <path>", "Direct workspace path");
@@ -99,7 +99,7 @@ export function registerCli(program: Command, ctx: PluginContext): void {
     });
 
   // Channel management commands
-  const channel = devclaw
+  const channel = marketclaw
     .command("channel")
     .description("Manage project channels (register, deregister, list)");
 

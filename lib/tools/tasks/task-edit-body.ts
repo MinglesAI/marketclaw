@@ -83,11 +83,12 @@ Examples:
       const resolvedConfig = await loadConfig(workspaceDir, project.name);
       const initialStateLabel = getInitialStateLabel(resolvedConfig.workflow);
 
-      // Collect architect active states as additional editable states
-      const architectActiveStates = Object.values(resolvedConfig.workflow.states)
-        .filter((s) => s.type === "active" && s.role === "architect")
+      // Collect strategist/architect active states as additional editable states
+      // (strategist = MarketClaw research role; architect = DevClaw equivalent — both allowed)
+      const researchActiveStates = Object.values(resolvedConfig.workflow.states)
+        .filter((s) => s.type === "active" && (s.role === "strategist" || s.role === "architect"))
         .map((s) => s.label);
-      const editableStates = [initialStateLabel, ...architectActiveStates];
+      const editableStates = [initialStateLabel, ...researchActiveStates];
 
       // Fetch current issue
       const issue = await provider.getIssue(issueId);

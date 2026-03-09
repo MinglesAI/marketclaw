@@ -9,8 +9,8 @@
  *   5. Attachments are available for architects/developers in task context
  *
  * Storage layout:
- *   devclaw/attachments/<projectSlug>/<issueId>/<uuid>-<filename>
- *   devclaw/attachments/<projectSlug>/<issueId>/metadata.json
+ *   marketclaw/attachments/<projectSlug>/<issueId>/<uuid>-<filename>
+ *   marketclaw/attachments/<projectSlug>/<issueId>/metadata.json
  */
 import fs from "node:fs/promises";
 import path from "node:path";

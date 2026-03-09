@@ -14,7 +14,7 @@ import { getAllDefaultModels } from "../roles/index.js";
 export function isPluginConfigured(
   pluginConfig?: Record<string, unknown>,
 ): boolean {
-  // Models moved to workflow.yaml — check for any devclaw plugin config (heartbeat, notifications, etc.)
+  // Models moved to workflow.yaml — check for any marketclaw plugin config (heartbeat, notifications, etc.)
   return !!pluginConfig && Object.keys(pluginConfig).length > 0;
 }
 
@@ -100,7 +100,7 @@ MarketClaw turns each Telegram group into an autonomous AI marketing team:
 ## Setup Steps
 
 **Step 1: Agent Selection**
-Ask: "Do you want to configure DevClaw for the current agent, or create a new dedicated agent?"
+Ask: "Do you want to configure MarketClaw for the current agent, or create a new dedicated agent?"
 - Current agent → no \`newAgentName\` needed
 - New agent → ask for:
   1. Agent name
@@ -116,7 +116,7 @@ Ask: "Do you want to configure DevClaw for the current agent, or create a new de
 
 1. **Call \`autoconfigure_models\`** to automatically discover and assign models:
    - Discovers all authenticated models in OpenClaw
-   - Uses AI to intelligently assign them to DevClaw roles
+   - Uses AI to intelligently assign them to MarketClaw roles
    - Returns a ready-to-use model configuration
 
 2. **Handle the result**:

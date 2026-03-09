@@ -12,4 +12,4 @@ DevClaw config files (workflow.yaml, prompts) are **write-once**: created on fir
 ## Project-specific overrides
 
 To override tool behavior for a specific project, create prompt files in:
-`devclaw/projects/<name>/prompts/<role>.md`
+`marketclaw/projects/<name>/prompts/<role>.md`

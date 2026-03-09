@@ -9,11 +9,11 @@ import { HEARTBEAT_DEFAULTS } from "../services/heartbeat/index.js";
 import type { ExecutionMode } from "../workflow/index.js";
 
 /**
- * Write DevClaw plugin config to openclaw.json plugins section.
+ * Write MarketClaw plugin config to openclaw.json plugins section.
  *
  * Configures:
- * - Tool restrictions (deny sessions_spawn, sessions_send) for DevClaw agents
- * - Subagent cleanup interval (30 days) to keep development sessions alive
+ * - Tool restrictions (deny sessions_spawn, sessions_send) for MarketClaw agents
+ * - Subagent cleanup interval (30 days) to keep content sessions alive
  * - Heartbeat defaults
  *
  * Read-modify-write to preserve existing config.
@@ -29,11 +29,11 @@ export async function writePluginConfig(
   ensurePluginStructure(config);
 
   if (projectExecution) {
-    (config as any).plugins.entries.devclaw.config.projectExecution = projectExecution;
+    (config as any).plugins.entries.marketclaw.config.projectExecution = projectExecution;
   }
 
   // Clean up legacy models from openclaw.json (moved to workflow.yaml)
-  delete (config as any).plugins.entries.devclaw.config.models;
+  delete (config as any).plugins.entries.marketclaw.config.models;
 
   ensurePluginAllowed(config);
   ensureInternalHooks(config);
@@ -57,20 +57,20 @@ function ensurePluginStructure(config: Record<string, unknown>): void {
   const plugins = config.plugins as Record<string, unknown>;
   if (!plugins.entries) plugins.entries = {};
   const entries = plugins.entries as Record<string, unknown>;
-  if (!entries.devclaw) entries.devclaw = {};
-  const devclaw = entries.devclaw as Record<string, unknown>;
-  if (!devclaw.config) devclaw.config = {};
+  if (!entries.marketclaw) entries.marketclaw = {};
+  const marketclaw = entries.marketclaw as Record<string, unknown>;
+  if (!marketclaw.config) marketclaw.config = {};
 }
 
 /**
- * Ensure "devclaw" is in plugins.allow so OpenClaw trusts the plugin
+ * Ensure "marketclaw" is in plugins.allow so OpenClaw trusts the plugin
  * without requiring manual config after install.
  */
 function ensurePluginAllowed(config: Record<string, unknown>): void {
   const plugins = config.plugins as Record<string, unknown>;
   if (!Array.isArray(plugins.allow)) plugins.allow = [];
   const allow = plugins.allow as string[];
-  if (!allow.includes("devclaw")) allow.push("devclaw");
+  if (!allow.includes("marketclaw")) allow.push("marketclaw");
 }
 
 function configureSubagentCleanup(config: Record<string, unknown>): void {
@@ -99,9 +99,9 @@ function ensureInternalHooks(config: Record<string, unknown>): void {
 }
 
 function ensureHeartbeatDefaults(config: Record<string, unknown>): void {
-  const devclaw = (config as any).plugins.entries.devclaw.config;
-  if (!devclaw.work_heartbeat) {
-    devclaw.work_heartbeat = { ...HEARTBEAT_DEFAULTS };
+  const marketclaw = (config as any).plugins.entries.marketclaw.config;
+  if (!marketclaw.work_heartbeat) {
+    marketclaw.work_heartbeat = { ...HEARTBEAT_DEFAULTS };
   }
 }
 

@@ -223,7 +223,7 @@ export async function executeCompletion(opts: {
   await deactivateWorker(workspaceDir, projectSlug, role, { level: opts.level, slotIndex: opts.slotIndex, issueId: String(issueId) });
 
   // Send review routing notification when developer completes
-  if (role === "developer" && result === "done") {
+  if ((role === "developer" || role === "creator") && result === "done") {
     // Re-fetch issue to get labels after transition
     const updated = await provider.getIssue(issueId);
     const routing = detectStepRouting(updated.labels, "review") as "human" | "agent" | null;

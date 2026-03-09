@@ -667,7 +667,7 @@ export class GitHubProvider implements IssueProvider {
     file: { filename: string; buffer: Buffer; mimeType: string },
   ): Promise<string | null> {
     try {
-      const branch = "devclaw-attachments";
+      const branch = "marketclaw-attachments";
       const safeFilename = file.filename.replace(/[^a-zA-Z0-9._-]/g, "_");
       const filePath = `attachments/${issueId}/${Date.now()}-${safeFilename}`;
       const base64Content = file.buffer.toString("base64");
